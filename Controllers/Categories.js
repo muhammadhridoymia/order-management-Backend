@@ -4,6 +4,7 @@ import foodCategories from "../Models/categories.js";
 export const FoodCategories = async (req, res) => {
   try {
     const { name, foodIds } = req.body;
+    console.log("Received category data:", req.body);
 
     if (!name) {
       return res.status(400).json({ message: "Category name is required" });
@@ -107,5 +108,58 @@ export const getCategoriesFoods = async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+};
+
+
+//Change Img
+export const ChangeImg = async (req, res) => {
+  try {
+    const { id } = req.body;
+    console.log("Category ID for change img:", id);
+    const category = await foodCategories.findById(id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file uploaded" });
+    }
+
+    const streamUpload = (file) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "order" },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        stream.end(file.buffer);
+      });
+    };
+
+    const result = await streamUpload(req.file);
+    category.img = result.secure_url;
+    await category.save();
+
+    res.status(201).json({message: "Category image updated successfully",});
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+//Delete Category
+export const DeleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("Category ID for deletion:", id);
+    const category = await foodCategories.findByIdAndDelete(id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    res.status(200).json({ success: true, message: "Category deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
