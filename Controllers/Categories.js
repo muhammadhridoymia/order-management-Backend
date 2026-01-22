@@ -59,7 +59,12 @@ export const FoodCategories = async (req, res) => {
 export const getCategories = async (req, res) => {
   try {
     const categories = await foodCategories.find().sort({ createdAt: -1 });
-
+    if(!categories){
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      })
+    }
     res.status(200).json({
       success: true,
       categories,

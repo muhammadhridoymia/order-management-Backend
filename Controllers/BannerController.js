@@ -63,6 +63,7 @@ export const DeleteBanner = async (req, res) => {
 export const UpdateBannerStatus = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("Banner ID for status update:", id);
     
     const banner = await Banner.findById(id);
     if (!banner) {

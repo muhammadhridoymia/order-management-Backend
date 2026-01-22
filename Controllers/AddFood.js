@@ -43,7 +43,12 @@ export const AddFood = async (req, res) => {
 export const getAllFoods = async (req, res) => {
   try {
     const foods = await Food.find().sort({ createdAt: -1 });
-
+    if(!foods){
+      return res.status(404).json({
+        success: false,
+        message: "Food not found",
+      });
+    }
     res.status(200).json({
       success: true,
       foods,
@@ -136,7 +141,7 @@ export const getUnDisplayedFoods = async (req, res) => {
     const unDisplayedFoods = await Food.find({ display: false }).sort({ createdAt: -1 });
 
     if (unDisplayedFoods.length === 0) {
-      return res.status(404).json({ message: "No unDisplayed foods found" });
+      return res.status(404).json({ message: "No Undisplayed foods found" });
     }
     res.status(200).json({
       success: true,
