@@ -13,6 +13,7 @@ import StatusRoutes from "./Routes/Status.js";
 import bannerRoutes from "./Routes/BannerRoute.js";
 import users from "./Routes/Users.js";
 import OrderRoute from "./Routes/OrderRoute.js"
+import DailySale from "./Routes/DailySalesRoute.js";
 
 const app = express();
 const PORT = 5000;
@@ -36,7 +37,8 @@ app.use("/api", categoryRoutes);
 app.use("/api", StatusRoutes);
 app.use("/api", bannerRoutes);
 app.use("/api", users);
-app.use("/api",OrderRoute)
+app.use("/api", OrderRoute)
+app.use("/api", DailySale)
 
 server.listen(5000, () => {
     console.log("Server running on port 5000");

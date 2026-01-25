@@ -1,24 +1,197 @@
 import Order from "../Models/OrderSchema.js";
+import DailySale from "../Models/DailySale.js";
 
-export const createOrder = async (req, res) => {
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0]; // YYYY-MM-DD
+};
+
+
+
+export const createOrUpdateOrder = async (req, res) => {
   try {
-    const { name, items, userId } = req.body;
+    const { userId, name, items } = req.body;
 
-    if (!name || !items || items.length === 0 || !userId) {
-      return res.status(400).json({ message: "Invalid order data" });
+    if (!userId || !items || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order data",
+      });
     }
-    const order = new Order({
-      name,
-      items,
+
+    // 1️⃣ Check if there is an active order
+    let order = await Order.findOne({
       userId,
+      isCompleted: false,
+      canceled: false,
     });
-    console.log("order data:",order)
-    res.status(200).json({
+
+    // 2️⃣ If active order exists → add items
+    if (order) {
+      items.forEach((newItem) => {
+        // Always treat new items as a **new batch**
+        order.items.push({
+          foodId: newItem.foodId,
+          quantity: newItem.quantity,
+          received: false, // NEW batch, not received
+        });
+      });
+
+      await order.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Order updated successfully",
+        order,
+      });
+    }
+
+    // 3️⃣ No active order → create new order
+    const newOrder = new Order({
+      userId,
+      name,
+      items: items.map((item) => ({
+        foodId: item.foodId,
+        quantity: item.quantity,
+      })),
+    });
+
+    await newOrder.save();
+
+    res.status(201).json({
       success: true,
-      message: "Order Submit Successfull",
+      message: "New order created successfully",
+      order: newOrder,
     });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+
+export const getAllRuningOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ isCompleted: false })
+      .populate("items.foodId") 
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: error.message,
+    });
+  }
+};
+
+export const getUserOrders = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const orders = await Order.find({ userId })
+      .populate("items.foodId")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: "Status is required",
+      });
+    }
+
+    const order = await Order.findById(id).populate("items.foodId");
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    let updateData = { status };
+
+    if (status === "COMPLETED" && !order.isCompleted) {
+      updateData.isCompleted = true;
+
+      const orderTotal = order.items.reduce(
+        (sum, item) => sum + item.foodId.price * item.quantity,
+        0
+      );
+
+      const today = getTodayDate();
+
+      await DailySale.findOneAndUpdate(
+        { date: today },
+        {
+          $inc: {
+            totalSales: orderTotal,
+            totalOrders: 1,
+          },
+        },
+        { upsert: true, new: true }
+      );
+    }
+
+    if (status === "CANCELLED") {
+      updateData.canceled = true;
+    }
+
+    await Order.findByIdAndUpdate(id, updateData, { new: true });
+
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const getCompletedOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ isCompleted: true }) // 🔹 only completed orders
+      .populate("items.foodId")
+      .sort({ createdAt: -1 }); // newest first
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch completed orders",
+      error: error.message,
+    });
   }
 };
