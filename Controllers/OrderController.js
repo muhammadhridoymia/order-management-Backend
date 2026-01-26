@@ -178,7 +178,7 @@ export const updateOrderStatus = async (req, res) => {
 
 export const getCompletedOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ isCompleted: true }) // 🔹 only completed orders
+    const orders = await Order.find({ isCompleted: true }) 
       .populate("items.foodId")
       .sort({ createdAt: -1 }); // newest first
 
@@ -192,6 +192,55 @@ export const getCompletedOrders = async (req, res) => {
       success: false,
       message: "Failed to fetch completed orders",
       error: error.message,
+    });
+  }
+};
+
+
+export const getActiveOrderForApp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("mobile userId:", id);
+
+    const order = await Order.findOne({
+      userId: id,
+      isCompleted: false,
+      canceled: false
+    })
+      .populate("items.foodId", "name price")
+      .sort({ createdAt: -1 });
+
+    if (!order) {
+      return res.status(200).json({
+        success: true,
+        order: null
+      });
+    }
+
+    const response = {
+      _id: order._id,
+      status: order.status,
+      orderedAt: order.orderedAt,
+      message:order.message,
+      items: order.items.map(item => ({
+        name: item.foodId.name,
+        price: item.foodId.price,
+        quantity: item.quantity,
+        received: item.received,
+      }))
+    };
+
+    console.log("Order Data:", response);
+
+    res.status(200).json({
+      success: true,
+      order: response
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };

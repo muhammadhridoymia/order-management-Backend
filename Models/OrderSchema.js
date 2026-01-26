@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
-    message: { type: String, default: "" }, 
+    message: { type: String, default: "We Recived Your Order ,Sir Please Wait 10 minits" }, 
     status: {
       type: String,
       enum: ["PENDING", "ACCEPTED", "COMPLETED", "CANCELLED"],
