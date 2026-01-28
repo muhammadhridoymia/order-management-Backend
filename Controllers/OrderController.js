@@ -6,8 +6,7 @@ const getTodayDate = () => {
   return today.toISOString().split("T")[0]; // YYYY-MM-DD
 };
 
-
-
+//Creat Orders
 export const createOrUpdateOrder = async (req, res) => {
   try {
     const { userId, name, items } = req.body;
@@ -19,14 +18,14 @@ export const createOrUpdateOrder = async (req, res) => {
       });
     }
 
-    // 1️⃣ Check if there is an active order
+    //Check if there is an active order
     let order = await Order.findOne({
       userId,
       isCompleted: false,
       canceled: false,
     });
 
-    // 2️⃣ If active order exists → add items
+    //If active order exists → add items
     if (order) {
       items.forEach((newItem) => {
         // Always treat new items as a **new batch**
@@ -46,7 +45,7 @@ export const createOrUpdateOrder = async (req, res) => {
       });
     }
 
-    // 3️⃣ No active order → create new order
+    //No active order → create new order
     const newOrder = new Order({
       userId,
       name,
@@ -74,7 +73,7 @@ export const createOrUpdateOrder = async (req, res) => {
 };
 
 
-
+//All Active Orders
 export const getAllRuningOrders = async (req, res) => {
   try {
     const orders = await Order.find({ isCompleted: false })
@@ -110,7 +109,7 @@ export const getUserOrders = async (req, res) => {
 };
 
 
-
+//update Order staus 
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -175,7 +174,7 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-
+//All Completed Orders
 export const getCompletedOrders = async (req, res) => {
   try {
     const orders = await Order.find({ isCompleted: true }) 
@@ -196,7 +195,7 @@ export const getCompletedOrders = async (req, res) => {
   }
 };
 
-
+//Active For Mobile App
 export const getActiveOrderForApp = async (req, res) => {
   try {
     const { id } = req.params;
@@ -241,6 +240,40 @@ export const getActiveOrderForApp = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message
+    });
+  }
+};
+
+//Update Status of New Order  
+export const UpdateNewAddedItems = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("new order update id:",id)
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // mark all items as received
+    order.items.forEach(item => {
+      item.received = true;
+      item.receivedAt = new Date();
+    });
+
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "All items marked as received",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
