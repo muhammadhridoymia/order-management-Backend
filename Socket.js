@@ -23,7 +23,7 @@ export const initSocket = (server) => {
     // Send update to admin
     socket.on("orderSubmit", () => {
       console.log("Order Submeted");
-      io.emit("orderSubmited",);
+      io.to("admin").emit("orderSubmited",);
     });
 
 
