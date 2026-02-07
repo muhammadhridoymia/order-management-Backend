@@ -6,7 +6,7 @@ export const initSocket = (server) => {
   io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
   io.on("connection", (socket) => {
-    console.log("Socket connected:", socket.id);
+    // console.log("Socket connected:", socket.id);
 
     // JOIN ROOM
     socket.on("joinRoom", (roomId) => {

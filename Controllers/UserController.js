@@ -35,15 +35,24 @@ export const AddUser = async (req, res) => {
       password,
       img: result.secure_url,
     };
-    const userItem = new User(newUser);
-    await userItem.save();
+    const user= new User(newUser);
+    await user.save();
 
-    res.status(201).json({success:true,message: "User added successfully",});
+    res.status(201).json({
+      success:true,
+      message: "User added successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        img: user.img,
+      }
+    });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 //Get All Users
 export const getAllUsers = async (req, res) => {
   try {
@@ -163,6 +172,7 @@ export const loginUser = async (req, res) => {
   try {
     const { phone, password } = req.body;
 
+    console.log("Login data:",req.body)
     // Validate input
     if (!phone || !password) {
       return res.status(400).json({ 
@@ -196,7 +206,7 @@ export const loginUser = async (req, res) => {
         id: user._id,
         name: user.name,
         img: user.img,
-      }    
+      }
     });
   } catch (error) {
     console.error("Login error:", error);

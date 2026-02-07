@@ -10,11 +10,12 @@ const getTodayDate = () => {
 export const createOrUpdateOrder = async (req, res) => {
   try {
     const { userId, name, items } = req.body;
+    console.log("data for Creating Order", req.body);
 
     if (!userId || !items || items.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Invalid order data",
+        message: "Invalid order data from backend",
       });
     }
 
@@ -62,7 +63,6 @@ export const createOrUpdateOrder = async (req, res) => {
       message: "New order created successfully",
       order: newOrder,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -72,12 +72,11 @@ export const createOrUpdateOrder = async (req, res) => {
   }
 };
 
-
 //All Active Orders
 export const getAllRuningOrders = async (req, res) => {
   try {
     const orders = await Order.find({ isCompleted: false })
-      .populate("items.foodId") 
+      .populate("items.foodId")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -108,8 +107,7 @@ export const getUserOrders = async (req, res) => {
   }
 };
 
-
-//update Order staus 
+//update Order staus
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -138,7 +136,7 @@ export const updateOrderStatus = async (req, res) => {
 
       const orderTotal = order.items.reduce(
         (sum, item) => sum + item.foodId.price * item.quantity,
-        0
+        0,
       );
 
       const today = getTodayDate();
@@ -151,7 +149,7 @@ export const updateOrderStatus = async (req, res) => {
             totalOrders: 1,
           },
         },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
     }
 
@@ -165,7 +163,6 @@ export const updateOrderStatus = async (req, res) => {
       success: true,
       message: "Order status updated successfully",
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -177,7 +174,7 @@ export const updateOrderStatus = async (req, res) => {
 //All Completed Orders
 export const getCompletedOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ isCompleted: true }) 
+    const orders = await Order.find({ isCompleted: true })
       .populate("items.foodId")
       .sort({ createdAt: -1 }); // newest first
 
@@ -204,7 +201,7 @@ export const getActiveOrderForApp = async (req, res) => {
     const order = await Order.findOne({
       userId: id,
       isCompleted: false,
-      canceled: false
+      canceled: false,
     })
       .populate("items.foodId", "name price")
       .sort({ createdAt: -1 });
@@ -212,7 +209,7 @@ export const getActiveOrderForApp = async (req, res) => {
     if (!order) {
       return res.status(200).json({
         success: true,
-        order: null
+        order: null,
       });
     }
 
@@ -220,35 +217,34 @@ export const getActiveOrderForApp = async (req, res) => {
       _id: order._id,
       status: order.status,
       orderedAt: order.orderedAt,
-      message:order.message,
-      items: order.items.map(item => ({
-        name: item.foodId.name,
-        price: item.foodId.price,
-        quantity: item.quantity,
-        received: item.received,
-      }))
+      message: order.message,
+      items: order.items.map((item) => ({
+      name: item.foodId.name,
+      price: item.foodId.price,
+      quantity: item.quantity,
+      received: item.received,
+      })),
     };
 
     console.log("Order Data:", response);
 
     res.status(200).json({
       success: true,
-      order: response
+      order: response,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
-//Update Status of New Order  
+//Update Status of New Order
 export const UpdateNewAddedItems = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("new order update id:",id)
+    console.log("new order update id:", id);
     const order = await Order.findById(id);
     if (!order) {
       return res.status(404).json({
@@ -258,7 +254,7 @@ export const UpdateNewAddedItems = async (req, res) => {
     }
 
     // mark all items as received
-    order.items.forEach(item => {
+    order.items.forEach((item) => {
       item.received = true;
       item.receivedAt = new Date();
     });
@@ -269,7 +265,6 @@ export const UpdateNewAddedItems = async (req, res) => {
       success: true,
       message: "All items marked as received",
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
