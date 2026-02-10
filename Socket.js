@@ -25,8 +25,6 @@ export const initSocket = (server) => {
       console.log("Order Submeted");
       io.to("admin").emit("orderSubmited",);
     });
-
-
   });
 };
 
@@ -36,3 +34,5 @@ export const getIO = () => {
   }
   return io;
 };
+
+

@@ -6,6 +6,7 @@ const getTodayDate = () => {
   return today.toISOString().split("T")[0]; // YYYY-MM-DD
 };
 
+
 //Creat Orders
 export const createOrUpdateOrder = async (req, res) => {
   try {
@@ -77,6 +78,7 @@ export const getAllRuningOrders = async (req, res) => {
   try {
     const orders = await Order.find({ isCompleted: false })
       .populate("items.foodId")
+      .limit(20)
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -92,6 +94,7 @@ export const getAllRuningOrders = async (req, res) => {
     });
   }
 };
+
 
 export const getUserOrders = async (req, res) => {
   const { userId } = req.params;
