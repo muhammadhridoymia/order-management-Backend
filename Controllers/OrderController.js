@@ -11,7 +11,7 @@ const getTodayDate = () => {
 export const createOrUpdateOrder = async (req, res) => {
   try {
     const { userId, name, items } = req.body;
-    console.log("data for Creating Order", req.body);
+    console.log("data for  Order", req.body);
 
     if (!userId || !items || items.length === 0) {
       return res.status(400).json({

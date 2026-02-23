@@ -27,7 +27,7 @@ initSocket(server)
 
 // Connect MongoDB
 mongoose
-  .connect(process.env.MONGO_URI_L)
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
 
