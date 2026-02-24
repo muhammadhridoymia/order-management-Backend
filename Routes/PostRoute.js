@@ -1,11 +1,9 @@
 import express from "express";
-import { createPost, getAllPosts, deletePost, updatePost } from "../Controllers/PostController.js";
+import upload from "../Middleware/Cloudinary.js";
+import {createPost,getAllPosts,deletePost} from "../Controllers/PostController.js";
 
 const router = express.Router();
-
-router.post("/posts", createPost);
-router.get("/posts", getAllPosts);
-router.delete("/posts/:id", deletePost);
-router.put("/posts/:id", updatePost);
-
+router.post("/create/post", upload.single("image"), createPost);
+router.get("/get/posts", getAllPosts);
+router.delete("/delete/post/:id", deletePost);
 export default router;

@@ -14,12 +14,13 @@ import bannerRoutes from "./Routes/BannerRoute.js";
 import users from "./Routes/Users.js";
 import OrderRoute from "./Routes/OrderRoute.js"
 import DailySale from "./Routes/DailySalesRoute.js";
+import PostRoute from "./Routes/PostRoute.js";
 
 const app = express();
 const PORT = 5000;
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // ⭐ REQUIRED
+app.use(express.urlencoded({ extended: true })); 
 
 const server = http.createServer(app);
 initSocket(server)
@@ -39,6 +40,7 @@ app.use("/api", bannerRoutes);
 app.use("/api", users);
 app.use("/api", OrderRoute)
 app.use("/api", DailySale)
+app.use("/api", PostRoute);
 
 server.listen(5000, () => {
     console.log("Server running on port 5000");
