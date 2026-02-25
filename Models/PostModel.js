@@ -15,7 +15,17 @@ const postSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "hidden"],
       default: "active",
-    }
+    },
+    likes: {
+      type: Number,
+      default: 27,
+    },
+    comments: [
+      {
+        type: String,
+        default: "",
+      },
+    ],
   },
   { timestamps: true }
 );
